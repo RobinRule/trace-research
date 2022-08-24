@@ -17,6 +17,46 @@ TEMPLATES = Jinja2Templates(directory=str(BASE_PATH / "templates"))
 root_router = APIRouter()
 app = FastAPI(title="Recipe API", openapi_url=f"{settings.API_V1_STR}/openapi.json")
 
+from opentelemetry import trace
+from opentelemetry import context as context_api
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.sdk.resources import SERVICE_NAME, Resource
+from opentelemetry.sdk.trace import Span, SpanProcessor, TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from typing import Callable, Optional
+
+# Set OTEL collector endpoint with defined OTEL port
+endpoint = f"http://localhost:4317"
+
+# Setup tracer provider
+tracer_provider = TracerProvider(
+    resource=Resource.create({SERVICE_NAME: "testapp"}),
+)
+
+class SpanTagger(SpanProcessor):
+    def on_start(
+        self,
+        span: Span,
+        parent_context: Optional[context_api.Context] = None,
+    ) -> None:
+        span.set_attribute("environment", "localtest")
+
+# Add this span processor to tag all collected spans
+tracer_provider.add_span_processor(SpanTagger())
+
+trace.set_tracer_provider(tracer_provider)
+
+tracer_provider.add_span_processor(
+    BatchSpanProcessor(
+        OTLPSpanExporter(
+            endpoint=endpoint,
+            insecure=True,
+        ),
+    )
+)
+FastAPIInstrumentor.instrument_app(app)
+
 # Set all CORS enabled origins
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
