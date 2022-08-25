@@ -7,6 +7,8 @@ import Home from './pages/home';
 import RecipeDashboard from './pages/my-recipes';
 import ErrorPage from './pages/error-page';
 
+require('./tracing');
+
 const App = () => {
   return (
     <div className="App bg-black">

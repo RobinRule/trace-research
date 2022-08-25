@@ -1,7 +1,6 @@
-# ultimate-fastapi-tutorial
-The Ultimate FastAPI Tutorial
+This repo holds content for monitoring research puporse.
 
-For detailed explanations and to follow along:
-
-- Read the [blog post series](https://christophergs.com/tutorials/ultimate-fastapi-tutorial-pt-1-hello-world/)
-- [Pre-order the course](https://academy.christophergs.com/courses/fastapi-for-busy-engineers/)
+# Structure
+- monitoring: holds code for otel collector, jagger, zipkin and promethus.
+- frontend: a test frontend app based on react, it talks to backend.
+- backend: a fastapi based backend app.
